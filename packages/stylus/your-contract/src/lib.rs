@@ -150,6 +150,58 @@ impl YourContract {
         // This function allows the contract to receive ETH
         // The #[payable] attribute allows it to accept value
     }
+
+    // Portfolio Reading Functions
+    
+    /// Get ETH balance for an address
+    pub fn get_eth_balance(&self, account: Address) -> U256 {
+        self.vm().balance(account)
+    }
+
+    /// Get multiple ETH balances at once
+    pub fn get_eth_balances(&self, accounts: Vec<Address>) -> Vec<U256> {
+        accounts.iter().map(|account| self.vm().balance(*account)).collect()
+    }
+
+    /// Mock function to get ERC20 token balance (for demo purposes)
+    /// In a real implementation, this would call the ERC20 contract's balanceOf function
+    pub fn get_mock_token_balance(&self, token: Address, account: Address) -> U256 {
+        // Create a deterministic mock balance based on token and account addresses
+        let token_bytes = token.as_slice();
+        let account_bytes = account.as_slice();
+        
+        // Create a simple hash by XORing bytes to make it deterministic but varied
+        let mut hash_value: u64 = 0;
+        for i in 0..20 {
+            hash_value ^= (token_bytes[i] as u64) << (i % 8);
+            hash_value ^= (account_bytes[i] as u64) << ((i + 4) % 8);
+        }
+        
+        // Scale to reasonable token amounts (1-10,000 tokens with 18 decimals)
+        let base_amount = (hash_value % 10000) + 1;
+        U256::from(base_amount) * U256::from(10u64).pow(U256::from(18u64))
+    }
+
+    /// Get multiple token balances for a single account
+    pub fn get_mock_token_balances(&self, tokens: Vec<Address>, account: Address) -> Vec<U256> {
+        tokens.iter().map(|token| self.get_mock_token_balance(*token, account)).collect()
+    }
+
+    /// Get portfolio summary - returns ETH balance + token balances
+    pub fn get_portfolio(&self, account: Address, tokens: Vec<Address>) -> (U256, Vec<U256>) {
+        let eth_balance = self.get_eth_balance(account);
+        let token_balances = self.get_mock_token_balances(tokens, account);
+        (eth_balance, token_balances)
+    }
+
+    /// Get portfolios for multiple accounts (batch operation)
+    pub fn get_multiple_portfolios(&self, accounts: Vec<Address>, tokens: Vec<Address>) -> (Vec<U256>, Vec<Vec<U256>>) {
+        let eth_balances = self.get_eth_balances(accounts.clone());
+        let token_balances: Vec<Vec<U256>> = accounts.iter()
+            .map(|account| self.get_mock_token_balances(tokens.clone(), *account))
+            .collect();
+        (eth_balances, token_balances)
+    }
 }
 
 /// Implementation of the IOwnable interface
