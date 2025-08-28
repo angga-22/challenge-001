@@ -1,5 +1,5 @@
 ## 🎯 Challenge 001: Multi-Read Portfolio Dashboard
-Deployed App: https://challenge-001-nextjs-iota.vercel.app/
+Deployed App: https://challenge-001-nextjs-iota.vercel.app/portfolio
 ### Overview
 
 This project implements **Challenge 001: Multi-Read Portfolio Dashboard** - a comprehensive solution demonstrating advanced frontend optimization techniques with real blockchain integration on Arbitrum Stylus.
